@@ -45,6 +45,7 @@ export interface Task {
     isFirst: boolean
     formKey: string
     processDefinitionId: string
+    processInstanceId: string
     candidateGroups: string[]
 }
 
@@ -67,6 +68,19 @@ export interface GraphQLTaskQuery {
             query: { id: string }
         },
         fields: TaskFields
+    } 
+}
+
+export interface GraphQLFormQuery {
+    operation: {
+        name: 'form',
+        args: {
+            query: { 
+                id: string,
+                processDefinitionId: string
+             },
+        },
+        fields: string[]
     } 
 }
 

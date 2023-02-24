@@ -2,6 +2,7 @@ import { getTasklistToken } from "camunda-saas-oauth";
 import { getTasklistCredentials } from "camunda-8-credentials-from-env"
 import gotQl from 'gotql';
 import { Form, GraphQLTaskQuery, GraphQLTasksQuery, Task, TaskFields, TaskQuery, User, Variable, VariableInput } from "./Types";
+import { getResponseDataOrThrow, decodeTaskVariablesFromGraphQL, encodeTaskVariablesForGraphQL, JSONDoc } from "./utils";
  
 const pkg = require('../../package.json')
 
@@ -15,11 +16,13 @@ const defaultFields: TaskFields  = [
     'isFirst',
     'name',
     'processDefinitionId',
+    'processInstanceId',
     'processName',
     'sortValues',
     'taskDefinitionId',
     'taskState',
-]
+    {variables: { fields: ['name', 'value']}}
+] as any
 
 /**
  * @description The high-level client for the Tasklist GraphQL API
@@ -34,6 +37,9 @@ export class TasklistApiClient {
 
     /**
      * @example
+     * ```
+     * 
+     * ```
      * @description
      * 
      */
@@ -51,7 +57,6 @@ export class TasklistApiClient {
             'accept': '*/*'
         }
     }
-
     /**
      * @description Query Tasklist for a list of tasks. See the [API documentation](https://docs.camunda.io/docs/apis-clients/tasklist-api/queries/tasks/).
      * @example
@@ -68,9 +73,9 @@ export class TasklistApiClient {
      * ```
      * @param query 
      * @param fields - a list of fields to return in the query results
-     * @returns 
+     * 
      */
-    public async getTasks(query: Partial<TaskQuery>, fields: TaskFields = defaultFields): Promise<null | {tasks: Task[]}> {
+    public async getTasks(query: Partial<TaskQuery>, fields: TaskFields = defaultFields): Promise<{tasks: Task[]}> {
         const headers = await this.getHeaders()
         const q: GraphQLTasksQuery = {
             operation: {
@@ -84,38 +89,12 @@ export class TasklistApiClient {
         return gotQl.query(this.graphqlUrl,
             q,
             {headers}
-        ).then(res => res.data)
+        ).then(res =>  ({ tasks: getResponseDataOrThrow<{tasks: Task[]}>(res).tasks.map(decodeTaskVariablesFromGraphQL) })
+        )
     }
 
-    public async getAllTasks(fields: TaskFields = [
-        'assignee', 
-        'candidateGroups', 
-        'completionTime', 
-        'creationTime',
-        'formKey',
-        'id',
-        'isFirst',
-        'name',
-        'processDefinitionId',
-        'processName',
-        'sortValues',
-        'taskDefinitionId',
-        'taskState',
-        ]) {
-        const headers = await this.getHeaders()
-        const query: GraphQLTasksQuery = {
-            operation: {
-                name: 'tasks',
-                args: {
-                    query: {}
-                },
-                fields
-            }
-        }
-        return gotQl.query(this.graphqlUrl, 
-            query,
-            {headers},
-        ).then(res => res.data)
+    public async getAllTasks(fields: TaskFields = defaultFields): Promise<{tasks:Task[]}> {
+        return this.getTasks({}, fields)
     }
 
     /**
@@ -124,15 +103,13 @@ export class TasklistApiClient {
      * @param fields 
      * @returns 
      */
-    public async getTask(id: string, fields = defaultFields) {
+    public async getTask(id: string, fields = defaultFields): Promise<{task: Task}> {
         const headers = await this.getHeaders()
-        const query: GraphQLTaskQuery = {
+        const query = {
             operation: {
                 name: 'task',
                 args: {
-                    query: {
-                        id
-                    }
+                    id
                 },
                 fields
             }
@@ -140,7 +117,7 @@ export class TasklistApiClient {
         return gotQl.query(this.graphqlUrl, 
             query,
             {headers},
-        ).then(res => res.data)        
+        ).then(res => ({task: decodeTaskVariablesFromGraphQL(getResponseDataOrThrow<{task: Task}>(res).task)}))        
     }
 
     /**
@@ -148,8 +125,22 @@ export class TasklistApiClient {
      * @param id 
      * @param processDefinitionId 
      */
-    public async getForm(id: string, processDefinitionId: string): Promise<Form> {
-        throw new Error("Not implemented yet")
+    public async getForm(id: string, processDefinitionId: string): Promise<{form: Form}> {
+        const headers = await this.getHeaders()
+        const query = {
+            operation: {
+                name: 'form',
+                args: {
+                    id,
+                    processDefinitionId
+                },
+                fields: ['id', 'processDefinitionId', 'schema']
+            }
+        }
+        return gotQl.query(this.graphqlUrl, 
+            query,
+            {headers},
+        ).then(res => getResponseDataOrThrow(res))        
     }
 
 
@@ -157,7 +148,23 @@ export class TasklistApiClient {
      * @description https://docs.camunda.io/docs/apis-clients/tasklist-api/queries/current-user/
      */
     public async getCurrentUser(): Promise<User> {
-        throw new Error("Not implemented yet")
+        const headers = await this.getHeaders()
+        const query = {
+            operation: {
+                name: 'user',
+                fields: [
+                    'userId',
+                    'displayName',
+                    'permissions',
+                    'roles',
+                    'salesPlanType'
+                ]
+            }
+        }
+        return gotQl.query(this.graphqlUrl, 
+            query,
+            {headers},
+        ).then(res => getResponseDataOrThrow(res))        
     }
 
     /**
@@ -183,8 +190,23 @@ export class TasklistApiClient {
      * @param assignee 
      * @param allowOverrideAssignment 
      */
-    public async claimTask(taskId: string, assignee: string, allowOverrideAssignment: boolean): Promise<Task> {
-        throw new Error("Not implemented yet")
+    public async claimTask(taskId: string, assignee: string, allowOverrideAssignment: boolean = true): Promise<{claimTask: Task}> {
+        const headers = await this.getHeaders()
+        const query = {
+            operation: {
+                name: 'claimTask',
+                args: {
+                    taskId,
+                    assignee,
+                    allowOverrideAssignment: false
+                },
+                fields: defaultFields
+            }
+        }
+        return gotQl.mutation(this.graphqlUrl, 
+            query as any, // the typing seems to have an error
+            {headers},
+        ).then(res => getResponseDataOrThrow(res)) 
     }
 
     /**
@@ -192,16 +214,50 @@ export class TasklistApiClient {
      * @param taskId 
      * @param variables 
      */
-    public async completeTask(taskId: string, variables: VariableInput[]): Promise<Task> {
-        throw new Error("Not implemented yet")
+    public async completeTask(taskId: string, variables: JSONDoc): Promise<{completeTask: Task}> {
+        const headers = await this.getHeaders()
+        const query = {
+            operation: {
+                name: 'completeTask',
+                args: {
+                    taskId,
+                    variables: '$completionVariables'
+                }, 
+                fields: defaultFields
+            },
+            variables: {
+                completionVariables: {
+                    type: '[VariableInput!]!',
+                    value: encodeTaskVariablesForGraphQL(variables)
+                }
+            }
+        }
+        return gotQl.mutation(this.graphqlUrl, 
+            query as any, 
+            {headers},
+        ).then(res => getResponseDataOrThrow(res)) 
     }
 
     /**
-     * @description https://docs.camunda.io/docs/apis-clients/tasklist-api/mutations/delete-process-instance/
+     * @description Delete process instance data from the Tasklist ES by id. Returns true if the process instance is found and canceled, false if the process instance could not be found. 
+     * [Documentation](https://docs.camunda.io/docs/apis-clients/tasklist-api/mutations/delete-process-instance/).
      * @param processInstanceId 
      */
-    public async deleteProcessInstance(processInstanceId: string): Promise<boolean> {
-        throw new Error("Not implemented yet")
+    public async deleteProcessInstance(processInstanceId: string): Promise<{deleteProcessInstance: boolean}> {
+        const headers = await this.getHeaders()
+        const query = {
+            operation: {
+                name: 'deleteProcessInstance',
+                args: {
+                    processInstanceId,
+                }, 
+                fields: []
+            }
+        }
+        return gotQl.mutation(this.graphqlUrl, 
+            query, 
+            {headers},
+        ).then(res => getResponseDataOrThrow(res)) 
     }
 
     /**
@@ -209,6 +265,19 @@ export class TasklistApiClient {
      * @param taskId 
      */
     public async unclaimTask(taskId: string): Promise<Task> {
-        throw new Error("Not implemented yet")
+        const headers = await this.getHeaders()
+        const query = {
+            operation: {
+                name: 'unclaimTask',
+                args: {
+                    taskId,
+                },
+                fields: defaultFields
+            }
+        }
+        return gotQl.mutation(this.graphqlUrl, 
+            query, 
+            {headers},
+        ).then(res => getResponseDataOrThrow(res)) 
     }
 }
