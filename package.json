@@ -1,6 +1,6 @@
 {
-  "name": "tasklist-client-node-js",
-  "version": "1.0.0",
+  "name": "camunda-tasklist-client",
+  "version": "0.9.0",
   "description": "A Camunda 8 Tasklist API client for Node.js",
   "main": "index.js",
   "scripts": {
