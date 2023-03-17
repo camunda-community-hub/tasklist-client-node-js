@@ -36,3 +36,4 @@ async function main() {
 
 main()
 ```
+Full API documentation available [here](https://camunda-community-hub.github.io/tasklist-client-node-js/).
