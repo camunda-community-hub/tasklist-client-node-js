@@ -31,7 +31,7 @@ export interface TaskQuery {
     searchBeforeOrEqual: string[]
   }
 
-export interface Task {
+interface TaskBase {
     id: string
     name: string
     taskDefinitionId: string
@@ -39,7 +39,6 @@ export interface Task {
     creationTime: string
     completionTime: string
     assignee: string
-    variables: Variable[]
     taskState: 'COMPLETED' | 'CREATED' | 'CANCELED'
     sortValues: [string]
     isFirst: boolean
@@ -47,6 +46,14 @@ export interface Task {
     processDefinitionId: string
     processInstanceId: string
     candidateGroups: string[]
+}
+
+export interface Task extends TaskBase {
+    variables: Variable[]
+}
+
+export interface TaskWithVariables<T = {[key: string]: any}> extends TaskBase {
+    variables: T
 }
 
 export type TaskFields = Partial<keyof Task>[]

@@ -1,4 +1,5 @@
 import { literal } from "gotql"
+import { Task, TaskWithVariables } from "./Types"
 
 type JSON = string | number | boolean | JSON[] | JSONDoc[]
 export interface JSONDoc {
@@ -24,21 +25,17 @@ export const encodeTaskVariablesForGraphQL = (variables: JSONDoc) =>
         ({ name: `${key}`, value: escape(variables[key]) })
     )
 
-type TaskWithVariables = {
-    variables: {name: string, value: string}[]
-}
-
 /**
  * @description GraphQL returns variables as an array of {name: string, value: string} object.
  * This function turns this into a plain JS object.
  * @param task 
  * @returns 
  */
-export const decodeTaskVariablesFromGraphQL = <T extends TaskWithVariables>(task: T) => {
+export const decodeTaskVariablesFromGraphQL = <T>(task: Task): TaskWithVariables<T> => {
     // console.log("decodeTaskVariablesFromGraphQL", task)
     return ({
         ...task,
-        variables: (task.variables || []).reduce((prev, curr) => ({...prev, [curr.name]: JSON.parse(curr.value)}), {})
+        variables: (task.variables || []).reduce((prev, curr) => ({...prev, [curr.name]: JSON.parse(curr.value)}), {} as {[key:string]: any}) as T
     })
 }
 /**
