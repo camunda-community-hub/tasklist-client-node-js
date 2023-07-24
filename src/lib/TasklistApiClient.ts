@@ -1,7 +1,7 @@
 import { getTasklistToken } from "camunda-saas-oauth";
 import { getTasklistCredentials } from "camunda-8-credentials-from-env"
 import gotQl from 'gotql';
-import { Form, GraphQLTaskQuery, GraphQLTasksQuery, Task, TaskFields, TaskQuery, User, Variable, VariableInput } from "./Types";
+import { Form, GraphQLTasksQuery, Task, TaskFields, TaskQuery, TaskWithVariables, User, Variable } from "./Types";
 import { getResponseDataOrThrow, decodeTaskVariablesFromGraphQL, encodeTaskVariablesForGraphQL, JSONDoc } from "./utils";
  
 const pkg = require('../../package.json')
@@ -75,7 +75,7 @@ export class TasklistApiClient {
      * @param fields - a list of fields to return in the query results
      * 
      */
-    public async getTasks(query: Partial<TaskQuery>, fields: TaskFields = defaultFields): Promise<{tasks: Task[]}> {
+    public async getTasks<T = {[key: string]: any} >(query: Partial<TaskQuery>, fields: TaskFields = defaultFields): Promise<{tasks: TaskWithVariables<T>[]}> {
         const headers = await this.getHeaders()
         const q: GraphQLTasksQuery = {
             operation: {
@@ -89,12 +89,12 @@ export class TasklistApiClient {
         return gotQl.query(this.graphqlUrl,
             q,
             {headers}
-        ).then(res =>  ({ tasks: getResponseDataOrThrow<{tasks: Task[]}>(res).tasks.map(decodeTaskVariablesFromGraphQL) })
+        ).then(res =>  ({ tasks: getResponseDataOrThrow<{tasks: Task[]}>(res).tasks.map(decodeTaskVariablesFromGraphQL<T>) })
         )
     }
 
-    public async getAllTasks(fields: TaskFields = defaultFields): Promise<{tasks:Task[]}> {
-        return this.getTasks({}, fields)
+    public async getAllTasks<T = {[key: string]: any} >(fields: TaskFields = defaultFields): Promise<{tasks: TaskWithVariables<T>[]}> {
+        return this.getTasks<T>({}, fields)
     }
 
     /**
@@ -103,7 +103,7 @@ export class TasklistApiClient {
      * @param fields 
      * @returns 
      */
-    public async getTask(id: string, fields = defaultFields): Promise<{task: Task}> {
+    public async getTask<T = {[key: string]: any} >(id: string, fields = defaultFields): Promise<{task: TaskWithVariables<T>}> {
         const headers = await this.getHeaders()
         const query = {
             operation: {
@@ -117,7 +117,7 @@ export class TasklistApiClient {
         return gotQl.query(this.graphqlUrl, 
             query,
             {headers},
-        ).then(res => ({task: decodeTaskVariablesFromGraphQL(getResponseDataOrThrow<{task: Task}>(res).task)}))        
+        ).then(res => ({task: decodeTaskVariablesFromGraphQL<T>(getResponseDataOrThrow<{task: Task}>(res).task)}))        
     }
 
     /**
