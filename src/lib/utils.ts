@@ -35,9 +35,19 @@ export const decodeTaskVariablesFromGraphQL = <T>(task: Task): TaskWithVariables
     // console.log("decodeTaskVariablesFromGraphQL", task)
     return ({
         ...task,
-        variables: (task.variables || []).reduce((prev, curr) => ({...prev, [curr.name]: JSON.parse(curr.value)}), {} as {[key:string]: any}) as T
+        variables: (task.variables || []).reduce((prev, curr) => ({...prev, [curr.name]: safeJSONparse(curr.value)}), {} as {[key:string]: any}) as T
     })
 }
+
+const safeJSONparse = (obj: any) => {
+    try {
+        return JSON.parse(obj)
+    } catch {
+        console.log('Error parsing JSON')
+        return obj
+    }
+}
+
 /**
  * @description Helper method to throw if the GraphQL endpoint returns an error, or destructure the 
  * response data if the GraphQL returned data.
