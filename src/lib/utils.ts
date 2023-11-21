@@ -20,7 +20,7 @@ export const escape = (variable: JSON) => {
     return variable
 }
 
-export const encodeTaskVariablesForGraphQL = (variables: JSONDoc) => 
+export const encodeTaskVariablesForAPIRequest = (variables: JSONDoc) => 
     Object.keys(variables).map(key => 
         ({ name: `${key}`, value: escape(variables[key]) })
     )

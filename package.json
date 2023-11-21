@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "camunda-8-credentials-from-env": "^1.1.1",
-    "camunda-saas-oauth": "^1.2.0",
+    "camunda-saas-oauth": "^1.2.4",
     "gotql": "^2.1.0-alpha1"
   }
 }

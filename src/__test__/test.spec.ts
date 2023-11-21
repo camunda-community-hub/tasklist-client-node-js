@@ -22,10 +22,13 @@ describe("TasklistApiClient", () => {
     })
 
     beforeEach(async () => {
-        p = await zbc.createProcessInstance('TasklistTestProcess', {
-            name: "Joe Bloggs",
-            age: 42,
-            interests: ['golf', 'frisbee']
+        p = await zbc.createProcessInstance({
+            bpmnProcessId: 'TasklistTestProcess', 
+            variables: {
+                name: "Joe Bloggs",
+                age: 42,
+                interests: ['golf', 'frisbee']
+            }
         })
         await delay(10000) // we wait here to allow Tasklist to do its thing
     })
@@ -155,10 +158,13 @@ describe("TasklistApiClient", () => {
 
     it("can complete a task with variables", done => {
         const tasklist = new TasklistApiClient()
-        zbc.createProcessInstanceWithResult('TasklistTestProcess', {
-            name: "Joe Bloggs",
-            age: 42,
-            interests: ['golf', 'frisbee']
+        zbc.createProcessInstanceWithResult({
+            bpmnProcessId: 'TasklistTestProcess', 
+            variables: {
+                name: "Joe Bloggs",
+                age: 42,
+                interests: ['golf', 'frisbee']
+            }
         }).then(res => {
             console.log(res)
             p = null as any

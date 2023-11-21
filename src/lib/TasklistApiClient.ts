@@ -2,7 +2,7 @@ import { getTasklistToken } from "camunda-saas-oauth";
 import { getTasklistCredentials } from "camunda-8-credentials-from-env"
 import gotQl from 'gotql';
 import { Form, GraphQLTasksQuery, Task, TaskFields, TaskQuery, TaskWithVariables, User, Variable } from "./Types";
-import { getResponseDataOrThrow, decodeTaskVariablesFromGraphQL, encodeTaskVariablesForGraphQL, JSONDoc } from "./utils";
+import { getResponseDataOrThrow, decodeTaskVariablesFromGraphQL, encodeTaskVariablesForAPIRequest, JSONDoc } from "./utils";
  
 const pkg = require('../../package.json')
 
@@ -228,7 +228,7 @@ export class TasklistApiClient {
             variables: {
                 completionVariables: {
                     type: '[VariableInput!]!',
-                    value: encodeTaskVariablesForGraphQL(variables)
+                    value: encodeTaskVariablesForAPIRequest(variables)
                 }
             }
         }
