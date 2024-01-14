@@ -1,4 +1,4 @@
-import { getTasklistToken } from "camunda-saas-oauth";
+import { OAuthProviderImpl, getTasklistToken } from "camunda-saas-oauth";
 import { getTasklistCredentials } from "camunda-8-credentials-from-env"
 import gotQl from 'gotql';
 import { Form, GraphQLTasksQuery, Task, TaskFields, TaskQuery, TaskWithVariables, User, Variable } from "./Types";
@@ -33,6 +33,7 @@ const defaultFields: TaskFields  = [
  */
 export class TasklistApiClient {
     private userAgentString: string;
+    private oauthProvider: OAuthProviderImpl | undefined;
     graphqlUrl: string;
 
     /**
@@ -43,16 +44,23 @@ export class TasklistApiClient {
      * @description
      * 
      */
-    constructor() {
+    constructor(options: {
+        oauthProvider?: OAuthProviderImpl,
+        baseUrl?: string
+    } = {}) {
+        this.oauthProvider = options.oauthProvider;
         this.userAgentString = `tasklist-graphql-client-nodejs/${pkg.version}`
-        const creds = getTasklistCredentials()
-        this.graphqlUrl = `${creds.CAMUNDA_TASKLIST_BASE_URL}/graphql`
+        const baseUrl = options.baseUrl ?? getTasklistCredentials().CAMUNDA_TASKLIST_BASE_URL;
+        this.graphqlUrl = `${baseUrl}/graphql`;
     }
 
     private async getHeaders() {
+        const token = (this.oauthProvider) ?
+        await this.oauthProvider.getToken("TASKLIST") :
+        await getTasklistToken(this.userAgentString)
         return {
             'content-type': 'application/json',
-            'authorization': `Bearer ${await getTasklistToken(this.userAgentString)}`,
+            'authorization': `Bearer ${token}`,
             'user-agent': this.userAgentString,
             'accept': '*/*'
         }
