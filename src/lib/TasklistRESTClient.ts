@@ -1,7 +1,8 @@
 import { OAuthProviderImpl, getTasklistToken } from "camunda-saas-oauth";
 import { getTasklistCredentials } from "camunda-8-credentials-from-env"
 import got from 'got';
-import { Form, Task, TaskQuery, Variable } from "./Types";
+import { Form, Task, Variable } from "./Types";
+import { REST } from "./TypesREST";
 import { encodeTaskVariablesForAPIRequest, JSONDoc } from "./utils";
  
 const pkg = require('../../package.json')
@@ -67,7 +68,7 @@ export class TasklistRESTClient {
      * ```
      * @param query 
      */
-    public async getTasks(query: Partial<TaskQuery>): Promise<Task[]> {
+    public async getTasks(query: Partial<REST.TaskQuery>): Promise<Task[]> {
         const headers = await this.getHeaders()
         return this.rest.post('tasks/search', {
             json: query,
