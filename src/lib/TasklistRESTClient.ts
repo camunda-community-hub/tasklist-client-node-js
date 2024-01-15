@@ -1,7 +1,7 @@
 import { OAuthProviderImpl, getTasklistToken } from "camunda-saas-oauth";
 import { getTasklistCredentials } from "camunda-8-credentials-from-env"
 import got from 'got';
-import { Form, Task, Variable } from "./Types";
+import { Form, Variable } from "./Types";
 import { REST } from "./TypesREST";
 import { encodeTaskVariablesForAPIRequest, JSONDoc } from "./utils";
  
@@ -68,7 +68,7 @@ export class TasklistRESTClient {
      * ```
      * @param query 
      */
-    public async getTasks(query: Partial<REST.TaskQuery>): Promise<Task[]> {
+    public async getTasks(query: Partial<REST.TaskQuery>): Promise<REST.Task[]> {
         const headers = await this.getHeaders()
         return this.rest.post('tasks/search', {
             json: query,
@@ -76,7 +76,7 @@ export class TasklistRESTClient {
         }).json()
     }
 
-    public async getAllTasks(): Promise<Task[]> {
+    public async getAllTasks(): Promise<REST.Task[]> {
         return this.getTasks({})
     }
 
@@ -86,9 +86,9 @@ export class TasklistRESTClient {
      * @param id 
      * @returns 
      */
-    public async getTask(taskId: string,): Promise<Task> {
+    public async getTask(taskId: string,): Promise<REST.Task> {
         const headers = await this.getHeaders()
-        return this.rest.get('tasks/${taskId}', {
+        return this.rest.get(`tasks/${taskId}`, {
             headers,
         }).json()   
     }
@@ -98,9 +98,9 @@ export class TasklistRESTClient {
      * @param formId 
      * @param processDefinitionKey 
      */
-    public async getForm(formId: string, processDefinitionKey: string): Promise<{form: Form}> {
+    public async getForm(formId: string, processDefinitionKey: string): Promise<Form> {
         const headers = await this.getHeaders()
-        return this.rest.get('forms/${formId}', {
+        return this.rest.get(`forms/${formId}`, {
             searchParams: {
                 processDefinitionKey
             },
@@ -117,7 +117,7 @@ export class TasklistRESTClient {
     public async getVariables(taskId: string, variableNames?: string[]): Promise<Variable[]> {
         const headers = await this.getHeaders()
         return this.rest.post(`tasks/${taskId}/variables/search`, {
-            body: JSON.stringify(variableNames || []),
+            body: JSON.stringify({ variableNames: variableNames || [] }),
             headers
         }).json()
     }
@@ -141,7 +141,7 @@ export class TasklistRESTClient {
      * @param allowOverrideAssignment 
      * @throws 400 - task not active, or already assigned. 403 - no permission to reassign task. 404 - no task for taskId.
      */
-    public async assignTask({taskId, allowOverrideAssignment = false, assignee}: {taskId: string, assignee?: string, allowOverrideAssignment?: boolean}): Promise<Task> {
+    public async assignTask({taskId, allowOverrideAssignment = false, assignee}: {taskId: string, assignee?: string, allowOverrideAssignment?: boolean}): Promise<REST.Task> {
         const headers = await this.getHeaders()
         return this.rest.patch(`tasks/${taskId}/assign`, {
             body: JSON.stringify({
@@ -157,7 +157,7 @@ export class TasklistRESTClient {
      * @param taskId 
      * @param variables 
      */
-    public async completeTask(taskId: string, variables?: JSONDoc): Promise<Task> {
+    public async completeTask(taskId: string, variables?: JSONDoc): Promise<REST.Task> {
         const headers = await this.getHeaders()
         return this.rest.patch(`tasks/${taskId}/complete`, {
             headers,
@@ -171,7 +171,7 @@ export class TasklistRESTClient {
      * @description Unassign a task with taskI
      * @param taskId 
      */
-    public async unassignTask(taskId: string): Promise<Task> {
+    public async unassignTask(taskId: string): Promise<REST.Task> {
         const headers = await this.getHeaders()
         return this.rest.patch(`tasks/${taskId}/unassign`, 
             {headers},
