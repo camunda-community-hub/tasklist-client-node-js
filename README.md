@@ -22,9 +22,10 @@ npm i camunda-tasklist-client
 Set the credential for Camunda SaaS in the environment, then: 
 
 ```typescript
-import { TasklistApiClient } from 'camunda-tasklist-client'
+import { TasklistApiClient, SaasAuthProvider } from 'camunda-tasklist-client'
 
-const tasklist = new TasklistApiClient()
+const authProvider = new SaasAuthProvider()
+const tasklist = new TasklistApiClient(authProvider)
 
 async function main() {
     const { tasks } = await tasklist.getTasks({state: TaskState.CREATED})
@@ -36,4 +37,24 @@ async function main() {
 
 main()
 ```
+
+## Custom Your Own Auth Provider
+
+You can implement your own auth provider by implementing the `TasklistAuthProvider` abstract class.
+
+```typescript
+import { TasklistAuthProvider } from 'camunda-tasklist-client'
+
+export class MyAuthProvider extends TasklistAuthProvider {
+    abstract getBaseUrl(): string {
+        // return the base URL of the Camunda SaaS instance
+    }
+
+    async getHeaders(): Promise<string> {
+        // return the access token
+    }
+}
+```
+
+## API Documentation
 Full API documentation available [here](https://camunda-community-hub.github.io/tasklist-client-node-js/).
