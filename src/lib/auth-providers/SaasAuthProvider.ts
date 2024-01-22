@@ -1,4 +1,4 @@
-import { TasklistAuthProvider } from "./AuthApiClient";
+import { TasklistAuthProvider } from "./TasklistAuthProvider";
 import { getTasklistCredentials } from "camunda-8-credentials-from-env";
 import { getTasklistToken } from "camunda-saas-oauth";
 const pkg = require("../../package.json");

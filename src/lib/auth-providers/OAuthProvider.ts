@@ -1,7 +1,5 @@
 import { OAuthProviderImpl } from "camunda-saas-oauth";
-import { TaskState } from "../Types";
-import { TasklistApiClient } from "../TasklistApiClient";
-import { TasklistAuthProvider } from "./AuthApiClient";
+import { TasklistAuthProvider } from "./TasklistAuthProvider";
 import { getTasklistCredentials } from "camunda-8-credentials-from-env";
 
 export class OAuthProvider extends TasklistAuthProvider {

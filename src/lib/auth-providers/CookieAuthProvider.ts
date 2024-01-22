@@ -1,4 +1,4 @@
-import { IOptionHeaders, TasklistAuthProvider } from "./AuthApiClient";
+import { IOptionHeaders, TasklistAuthProvider } from "./TasklistAuthProvider";
 
 /**
  * @description This is an example of how to use the CookieAuthProvider class to create a TasklistApiClient instance.
