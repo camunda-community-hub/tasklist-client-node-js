@@ -15,7 +15,7 @@ import {
   encodeTaskVariablesForAPIRequest,
   JSONDoc,
 } from "./utils";
-import { TasklistAuthProvider } from "./auth-providers/AuthApiClient";
+import { TasklistAuthProvider } from "./auth-providers/TasklistAuthProvider";
 
 const pkg = require("../../package.json");
 

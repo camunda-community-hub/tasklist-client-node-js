@@ -2,7 +2,7 @@ import { Form, Task, TaskQuery, Variable } from "./Types";
 import { JSONDoc, encodeTaskVariablesForAPIRequest } from "./utils";
 import { OAuthProviderImpl, getTasklistToken } from "camunda-saas-oauth";
 
-import { TasklistAuthProvider } from "./auth-providers/AuthApiClient";
+import { TasklistAuthProvider } from "./auth-providers/TasklistAuthProvider";
 import got from "got";
 
 const pkg = require("../../package.json");
