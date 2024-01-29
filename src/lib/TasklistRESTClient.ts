@@ -33,8 +33,7 @@ export class TasklistRESTClient {
     } = {}) {
         this.oauthProvider = options.oauthProvider
         this.userAgentString = `tasklist-rest-client-nodejs/${pkg.version}`
-        const creds = getTasklistCredentials()
-        const baseUrl = options.baseUrl ?? `${creds.CAMUNDA_TASKLIST_BASE_URL}/v1`
+        const baseUrl = options.baseUrl ?? getTasklistCredentials().CAMUNDA_TASKLIST_BASE_URL
         this.rest = got.extend({
             prefixUrl: `${baseUrl}/${TASKLIST_API_VERSION}`
         })
