@@ -9,6 +9,10 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
+# DEPRECATED
+
+This package is deprecated. Please use the official SDK package @camunda8/sdk. See: https://github.com/camunda/camunda-8-js-sdk
+---
 A Camunda 8 Tasklist API client for Node.js. Uses [camunda-saas-oauth-nodejs](https://github.com/camunda-community-hub/camunda-saas-oauth-nodejs) to use client credentials from the environment for authentication.
 
 ## Installation
